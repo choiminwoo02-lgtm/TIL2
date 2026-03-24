@@ -1,49 +1,30 @@
-# Handwritten Digit Recognition Project
+# GEMINI.md: Todo List App Development Workspace
 
-This project provides tools for recognizing handwritten digits (0-9) using machine learning. It includes a web-based interface, a desktop GUI, and a command-line script for training and evaluation.
+## Directory Overview
+This workspace is dedicated to the development of a simple, modern, and persistent **Personal Todo List Application**. The project aims to provide a clean interface for managing daily tasks with a focus on ease of use and visual progress tracking.
 
-## Project Overview
+## Project Vision
+A lightweight, web-based tool for individuals to manage 10-20 tasks daily, featuring:
+*   **Task Lifecycle**: Create, read, update, delete (CRUD) operations and completion toggling.
+*   **Categorization**: Organizing tasks into 'Work', 'Personal', and 'Study'.
+*   **Visual Progress**: A real-time progress bar and statistical display (e.g., "3 of 10 completed").
+*   **Persistence**: Data remains available after page refreshes using browser `localStorage`.
 
-- **Core Technology:** Python, scikit-learn (SVM and KNN), Flask, PIL (Pillow), NumPy.
-- **Dataset:** Uses the scikit-learn `digits` dataset (8x8 grayscale images).
-- **Key Features:**
-    - **Advanced Preprocessing:** Cropping and centering of drawn digits for better accuracy.
-    - **Interactive Learning (Teaching):** Users can correct the model by providing the correct label for a drawing, which is then added to the training set in real-time.
-    - **Web Interface:** A Flask-based web application with an HTML5 canvas.
-    - **Desktop GUI:** A Tkinter-based application for drawing and recognition.
+## Key Files
+*   **`[Step 1] 기본 레이아웃 및 스타일링 구현.txt`**: A comprehensive development roadmap consisting of 5 specific prompts designed for AI-assisted coding.
 
-## Architecture
+## Technical Stack
+*   **Frontend**: Pure HTML5, CSS3 (Modern, responsive layout).
+*   **Logic**: Vanilla JavaScript (DOM manipulation, event handling).
+*   **Storage**: Browser `localStorage` (No backend required).
 
-- `app.py`: Flask backend server for the web version.
-- `mnist_painter.py`: Desktop Tkinter application for drawing and recognizing digits.
-- `mnist_recognizer.py`: CLI script to train and evaluate an SVM classifier.
-- `templates/index.html`: Frontend for the web application.
+## Development Roadmap (Plan)
+The development is structured into five core phases:
+1.  **Phase 1**: Basic UI layout and modern CSS styling.
+2.  **Phase 2**: Core data structure (`todos` array) and rendering logic.
+3.  **Phase 3**: Task state toggling (completed/active) and deletion.
+4.  **Phase 4**: Real-time synchronization of the progress bar and statistics.
+5.  **Phase 5**: Integration with `localStorage` for data persistence.
 
-## Building and Running
-
-### Prerequisites
-- Python 3.x
-- Required libraries: `Flask`, `numpy`, `Pillow`, `scikit-learn`, `matplotlib`.
-- Installation: `pip install Flask numpy Pillow scikit-learn matplotlib`
-
-### Running the Web Application
-```powershell
-python app.py
-```
-Then open `http://127.0.0.1:5000` in your browser.
-
-### Running the Desktop GUI
-```powershell
-python mnist_painter.py
-```
-
-### Running the CLI Evaluator
-```powershell
-python mnist_recognizer.py
-```
-
-## Development Conventions
-
-- **Model Selection:** Uses `KNeighborsClassifier` for the interactive versions to support fast online updates (teaching).
-- **Preprocessing:** All drawing inputs are automatically cropped to the bounding box and centered in an 8x8 frame to match the training data format.
-- **Language:** All code and comments are in English.
+## Usage
+Use the prompts provided in the `.txt` instruction file sequentially to build the application from scratch. Each step builds upon the previous one to ensure a stable and functional implementation.

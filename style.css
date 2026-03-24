@@ -1,0 +1,371 @@
+/* Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #343a40;
+    --border-color: #dee2e6;
+    --list-border: #f1f3f5;
+    --progress-bg: #f1f3f5;
+    --input-bg: #ffffff;
+    --hover-bg: #f8f9fa;
+    --secondary-text: #868e96;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --border-color: #333333;
+    --list-border: #2c2c2c;
+    --progress-bg: #2c2c2c;
+    --input-bg: #2c2c2c;
+    --hover-bg: #252525;
+    --secondary-text: #adb5bd;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    transition: background-color 0.3s;
+}
+
+/* Header Section */
+header {
+    margin-bottom: 30px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.date {
+    font-size: 14px;
+    color: var(--secondary-text);
+}
+
+/* Theme Switch */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.theme-text {
+    font-size: 12px;
+    color: var(--secondary-text);
+    font-weight: 600;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 44px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 16px;
+}
+
+input:checked + .slider {
+    background-color: #4dabf7;
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Progress Bar */
+.progress-section {
+    background-color: var(--progress-bg);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.progress-bar-container {
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+    box-shadow: 0 0 8px rgba(79, 172, 254, 0.3);
+    border-radius: 4px;
+}
+
+/* Input Section */
+.input-section {
+    margin-bottom: 30px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+input[type="text"], select {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.3s;
+}
+
+input[type="text"] {
+    flex: 1;
+}
+
+input[type="text"]:focus {
+    border-color: #4dabf7;
+}
+
+select {
+    cursor: pointer;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: #4dabf7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #339af0;
+}
+
+/* Filter & Management Section */
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-tab {
+    background: none;
+    border: 1px solid transparent;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--secondary-text);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+}
+
+.filter-tab.active {
+    background-color: #4dabf7;
+    color: white;
+    border-color: #4dabf7;
+}
+
+.clear-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-btn:hover {
+    background-color: #fff5f5;
+    color: #fa5252;
+    border-color: #ffa8a8;
+}
+
+/* List Item Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* List Section */
+#todo-list {
+    list-style: none;
+}
+
+.todo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--list-border);
+    transition: background-color 0.2s;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.item-right-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.edit-btn { color: #4dabf7; }
+.edit-btn:hover { background-color: #e7f5ff; }
+
+.delete-btn { color: #fa5252; }
+.delete-btn:hover { background-color: #fff5f5; }
+
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.todo-text {
+    font-size: 16px;
+}
+
+.todo-text.completed {
+    text-decoration: line-through;
+    color: var(--secondary-text);
+}
+
+/* Category Tags */
+.category-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.work-tag { background-color: #e7f5ff; color: #1971c2; }
+.personal-tag { background-color: #f3f0ff; color: #6741d9; }
+.study-tag { background-color: #ebfbee; color: #2b8a3e; }
+
+/* Responsive */
+@media (max-width: 480px) {
+    .input-group {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}
