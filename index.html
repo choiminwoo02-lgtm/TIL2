@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Arcade - Retro Quiz</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        :root {
+            --primary-color: #ff00ff; --secondary-color: #00ffff; --bg-color: #000033;
+            --text-color: #ffffff; --correct-color: #00ff00; --wrong-color: #ff0000;
+            --pixel-font: 'Press Start 2P', cursive;
+        }
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color);
+            font-family: var(--pixel-font); display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow-x: hidden; image-rendering: pixelated;
+        }
+        .game-container {
+            width: 90%; max-width: 600px; background: #000; border: 4px solid var(--primary-color);
+            padding: 20px; box-shadow: 10px 10px 0px var(--secondary-color); text-align: center;
+        }
+        h1 { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 20px; text-shadow: 2px 2px 0 #000; }
+        h2 { font-size: 0.9rem; margin-bottom: 15px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        p { font-size: 0.7rem; line-height: 1.5; }
+        .pixel-button {
+            display: block; width: 100%; padding: 15px; margin: 10px 0; background: #222;
+            border: 4px solid #444; color: #fff; font-family: var(--pixel-font); font-size: 0.7rem;
+            cursor: pointer; transition: all 0.1s; text-transform: uppercase;
+        }
+        .pixel-button:hover:not(:disabled) { background: #444; border-color: var(--secondary-color); transform: scale(1.02); }
+        .pixel-button:active:not(:disabled) { transform: scale(0.98); }
+        .pixel-button.primary { border-color: var(--primary-color); }
+        .pixel-button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .hud { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.5rem; border-bottom: 2px dashed #444; padding-bottom: 10px; }
+        .heart { color: var(--wrong-color); }
+        .score { color: var(--secondary-color); }
+        .combo { color: var(--correct-color); }
+        .timer-container { width: 100%; height: 10px; background: #222; border: 2px solid #444; margin-bottom: 20px; position: relative; }
+        .timer-bar { height: 100%; background: var(--primary-color); transition: width 1s linear; }
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-container { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
+        .item-button { padding: 10px; font-size: 0.4rem; flex: 1; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .blinking { animation: blink 1s infinite; }
+        @media (max-width: 480px) {
+            .game-container { width: 95%; padding: 15px; border-width: 2px; }
+            h1 { font-size: 1.1rem; } h2 { font-size: 0.7rem; }
+            .pixel-button { padding: 12px; font-size: 0.5rem; }
+            .category-grid { grid-template-columns: 1fr; }
+        }
+        table { width: 100%; font-size: 0.5rem; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #222; text-align: center; }
+        th { border-bottom: 2px solid var(--primary-color); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+        const QUESTIONS_DATA = [
+            { "id": 1, "category": "history", "question_text": "조선 시대 제1대 왕은 누구입니까?", "options": ["태조", "정종", "태종", "세종"], "correct_answer_index": 0, "explanation": "조선 제1대 왕은 태조 이성계입니다." },
+            { "id": 2, "category": "history", "question_text": "임진왜란 당시 한산도 대첩을 이끈 장군은?", "options": ["권율", "이순신", "곽재우", "김시민"], "correct_answer_index": 1, "explanation": "이순신 장군이 학익진 전법으로 승리했습니다." },
+            { "id": 3, "category": "history", "question_text": "3.1 운동이 일어난 해는 언제입니까?", "options": ["1910년", "1919년", "1945년", "1950년"], "correct_answer_index": 1, "explanation": "1919년 고종의 인산일을 기해 전국적으로 일어났습니다." },
+            { "id": 4, "category": "history", "question_text": "발해를 건국한 인물은 누구입니까?", "options": ["온조", "왕건", "대조영", "견훤"], "correct_answer_index": 2, "explanation": "고구려 유민 대조영이 동모산 근처에서 건국했습니다." },
+            { "id": 5, "category": "history", "question_text": "훈민정음을 창제한 왕은 누구입니까?", "options": ["태조", "세종", "영조", "정조"], "correct_answer_index": 1, "explanation": "백성을 가르치는 바른 소리, 세종대왕이 창제했습니다." },
+            { "id": 6, "category": "history", "question_text": "신라의 제24대 왕으로 영토 확장에 힘쓴 왕은?", "options": ["지증왕", "법흥왕", "진흥왕", "무열왕"], "correct_answer_index": 2, "explanation": "진흥왕은 북한산비 등 4개의 순수비를 세웠습니다." },
+            { "id": 7, "category": "history", "question_text": "고려 시대 문익점이 붓통에 숨겨 들여온 씨앗은?", "options": ["쌀", "목화", "보리", "콩"], "correct_answer_index": 1, "explanation": "목화씨를 들여와 의복 생활에 큰 변화를 주었습니다." },
+            { "id": 8, "category": "history", "question_text": "독립문 건립을 주도한 단체는?", "options": ["신간회", "독립협회", "애국계몽단체", "임시정부"], "correct_answer_index": 1, "explanation": "서재필 등이 중심이 된 독립협회에서 건립했습니다." },
+            { "id": 9, "category": "history", "question_text": "고구려의 전성기를 이끈 제19대 왕은?", "options": ["광개토대왕", "장수왕", "미천왕", "고국양왕"], "correct_answer_index": 0, "explanation": "광개토대왕은 영락이라는 연호를 사용하며 영토를 확장했습니다." },
+            { "id": 10, "category": "history", "question_text": "1945년 8월 15일, 우리나라는 무엇을 맞이했나요?", "options": ["건국", "광복", "정부수립", "휴전"], "correct_answer_index": 1, "explanation": "일본의 무조건 항복으로 주권을 되찾은 광복절입니다." },
+            { "id": 11, "category": "science", "question_text": "태양계에서 가장 큰 행성은 무엇입니까?", "options": ["지구", "화성", "목성", "토성"], "correct_answer_index": 2, "explanation": "목성은 태양계에서 부피와 질량이 가장 큰 행성입니다." },
+            { "id": 12, "category": "science", "question_text": "물(H2O)의 끓는점은 몇 도(℃)입니까?", "options": ["0도", "50도", "100도", "120도"], "correct_answer_index": 2, "explanation": "1기압에서 물은 100도에서 끓습니다." },
+            { "id": 13, "category": "science", "question_text": "식물이 광합성을 할 때 필요한 기체는?", "options": ["산소", "질소", "이산화탄소", "수소"], "correct_answer_index": 2, "explanation": "이산화탄소와 물, 빛을 이용해 양분을 만듭니다." },
+            { "id": 14, "category": "science", "question_text": "원소 기호 'Au'가 나타내는 금속은?", "options": ["은", "금", "철", "구리"], "correct_answer_index": 1, "explanation": "Au는 금(Gold)의 원소 기호입니다." },
+            { "id": 15, "category": "science", "question_text": "사람의 뼈는 성인 기준 약 몇 개입니까?", "options": ["106개", "156개", "206개", "256개"], "correct_answer_index": 2, "explanation": "성인의 몸은 약 206개의 뼈로 구성됩니다." },
+            { "id": 16, "category": "science", "question_text": "상대성 이론을 발표한 과학자는?", "options": ["뉴턴", "에디슨", "아인슈타인", "테슬라"], "correct_answer_index": 2, "explanation": "알베르트 아인슈타인이 특수/일반 상대성 이론을 발표했습니다." },
+            { "id": 17, "category": "science", "question_text": "지구의 위성은 무엇입니까?", "options": ["태양", "달", "화성", "금성"], "correct_answer_index": 1, "explanation": "달은 지구의 유일한 자연 위성입니다." },
+            { "id": 18, "category": "science", "question_text": "빛의 속도는 초당 약 몇 km입니까?", "options": ["3만km", "30만km", "300만km", "3억km"], "correct_answer_index": 1, "explanation": "진공에서 빛의 속도는 초당 약 299,792km입니다." },
+            { "id": 19, "category": "science", "question_text": "혈액형 중에서 '만능 공혈자'로 불리는 형은?", "options": ["A형", "B형", "O형", "AB형"], "correct_answer_index": 2, "explanation": "O형은 모든 혈액형에게 수혈이 가능합니다." },
+            { "id": 20, "category": "science", "question_text": "가장 가벼운 원소는 무엇입니까?", "options": ["수소", "헬륨", "리튬", "산소"], "correct_answer_index": 0, "explanation": "수소는 원자 번호 1번으로 가장 가벼운 원소입니다." },
+            { "id": 21, "category": "geography", "question_text": "세계에서 가장 큰 섬은 어디입니까?", "options": ["일본", "제주도", "그린란드", "마다가스카르"], "correct_answer_index": 2, "explanation": "그린란드는 세계에서 가장 면적이 넓은 섬입니다." },
+            { "id": 22, "category": "geography", "question_text": "대한민국의 수도는 어디입니까?", "options": ["부산", "서울", "인천", "대구"], "correct_answer_index": 1, "explanation": "대한민국의 수도 서울입니다." },
+            { "id": 23, "category": "geography", "question_text": "세계에서 가장 높은 산은 무엇입니까?", "options": ["한라산", "에베레스트산", "백두산", "후지산"], "correct_answer_index": 1, "explanation": "에베레스트산이 가장 높습니다." },
+            { "id": 24, "category": "geography", "question_text": "우리나라에서 가장 큰 섬은?", "options": ["울릉도", "거제도", "독도", "제주도"], "correct_answer_index": 3, "explanation": "제주도는 우리나라에서 가장 면적이 넓은 섬입니다." },
+            { "id": 25, "category": "geography", "question_text": "사하라 사막은 어느 대륙에 있나요?", "options": ["아시아", "아프리카", "유럽", "남미"], "correct_answer_index": 1, "explanation": "사하라 사막은 아프리카 북부에 위치합니다." },
+            { "id": 26, "category": "geography", "question_text": "프랑스의 수도는 어디입니까?", "options": ["런던", "베를린", "파리", "로마"], "correct_answer_index": 2, "explanation": "프랑스의 수도는 파리입니다." },
+            { "id": 27, "category": "geography", "question_text": "지구의 남극과 북극 중 더 추운 곳은?", "options": ["남극", "북극", "비슷하다", "알 수 없다"], "correct_answer_index": 0, "explanation": "남극이 북극보다 평균 기온이 더 낮습니다." },
+            { "id": 28, "category": "geography", "question_text": "세계에서 가장 긴 강은?", "options": ["아마존강", "나일강", "한강", "미시시피강"], "correct_answer_index": 1, "explanation": "나일강은 세계에서 가장 긴 강입니다." },
+            { "id": 29, "category": "geography", "question_text": "일본의 가장 큰 섬은?", "options": ["홋카이도", "혼슈", "시코쿠", "큐슈"], "correct_answer_index": 1, "explanation": "혼슈는 일본의 본섬입니다." },
+            { "id": 30, "category": "geography", "question_text": "미국의 주(State)는 총 몇 개입니까?", "options": ["40개", "45개", "50개", "55개"], "correct_answer_index": 2, "explanation": "미국은 총 50개의 주로 구성됩니다." },
+            { "id": 31, "category": "general", "question_text": "대한민국의 국화(나라꽃)는 무엇입니까?", "options": ["벚꽃", "장미", "무궁화", "해바라기"], "correct_answer_index": 2, "explanation": "대한민국의 국화는 무궁화입니다." },
+            { "id": 32, "category": "general", "question_text": "체스에서 가장 많은 칸을 이동할 수 있는 말은?", "options": ["킹", "퀸", "비숍", "나이트"], "correct_answer_index": 1, "explanation": "퀸은 이동 제약이 가장 적습니다." },
+            { "id": 33, "category": "general", "question_text": "올림픽 오륜기에서 동그라미의 개수는 몇 개입니까?", "options": ["3개", "4개", "5개", "6개"], "correct_answer_index": 2, "explanation": "5대륙을 상징하는 5개의 고리입니다." },
+            { "id": 34, "category": "general", "question_text": "베토벤의 '합창' 교향곡은 몇 번인가요?", "options": ["5번", "6번", "7번", "9번"], "correct_answer_index": 3, "explanation": "9번 '합창'은 베토벤의 대표작입니다." },
+            { "id": 35, "category": "general", "question_text": "법원에서 판결을 내리는 사람은 누구입니까?", "options": ["변호사", "검사", "판사", "경찰"], "correct_answer_index": 2, "explanation": "판사는 판결을 내리는 주체입니다." },
+            { "id": 36, "category": "general", "question_text": "신문 기사의 요약 제목은?", "options": ["사설", "칼럼", "헤드라인", "스크랩"], "correct_answer_index": 2, "explanation": "헤드라인은 기사의 핵심 제목입니다." },
+            { "id": 37, "category": "general", "question_text": "노벨이 발명한 폭약은?", "options": ["TNT", "다이너마이트", "C4", "건파우더"], "correct_answer_index": 1, "explanation": "노벨은 다이너마이트를 발명했습니다." },
+            { "id": 38, "category": "general", "question_text": "세계 인구 1위 국가는? (2024)", "options": ["중국", "인도", "미국", "러시아"], "correct_answer_index": 1, "explanation": "최근 인도가 중국을 앞질렀습니다." },
+            { "id": 39, "category": "general", "question_text": "컴퓨터의 뇌, CPU의 약자는?", "options": ["GPU", "RAM", "CPU", "HDD"], "correct_answer_index": 2, "explanation": "Central Processing Unit의 약자입니다." },
+            { "id": 40, "category": "general", "question_text": "공차(Gong cha)는 어느 나라 브랜드인가요?", "options": ["한국", "대만", "중국", "일본"], "correct_answer_index": 1, "explanation": "공차는 대만 브랜드입니다." },
+            { "id": 41, "category": "anime", "question_text": "고무고무 열매를 먹고 온몸이 고무처럼 늘어나는 능력자로, '해적왕'을 꿈꾸는 밀짚모자 일당의 선장은?", "options": ["조로", "상디", "루피", "에이스"], "correct_answer_index": 2, "explanation": "원피스의 주인공 몽키 D. 루피입니다." },
+            { "id": 42, "category": "anime", "question_text": "포켓몬스터의 주인공 지우와 항상 함께 다니는 전기 타입 포켓몬으로, '백만볼트'가 주특기인 캐릭터는?", "options": ["파이리", "꼬부기", "피카츄", "이상해씨"], "correct_answer_index": 2, "explanation": "포켓몬스터의 상징적인 캐릭터 피카츄입니다." },
+            { "id": 43, "category": "anime", "question_text": "나뭇잎 마을의 닌자로, 몸속에 구미호가 봉인되어 있으며 장래 희망이 '호카게'인 소년은?", "options": ["사스케", "카카시", "가아라", "나루토"], "correct_answer_index": 3, "explanation": "나루토의 주인공 우즈마키 나루토입니다." },
+            { "id": 44, "category": "anime", "question_text": "이름을 적으면 그 사람은 죽게 된다는 사신(死神)의 노트를 주워 신세계의 신이 되려 했던 천재 고등학생은?", "options": ["L", "야가미 라이토", "니아", "류크"], "correct_answer_index": 1, "explanation": "데스노트의 주인공 야가미 라이토입니다." },
+            { "id": 45, "category": "anime", "question_text": "가족을 죽인 혈귀를 쫓기 위해 귀살대에 들어간 소년으로, '물의 호흡'과 '해의 호흡'을 사용하는 인물은?", "options": ["젠이츠", "이노스케", "기유", "탄지로"], "correct_answer_index": 3, "explanation": "귀멸의 칼날의 주인공 카마도 탄지로입니다." },
+            { "id": 46, "category": "anime", "question_text": "서기 2112년에서 온 고양이 로봇으로, 4차원 주머니에서 신비한 도구들을 꺼내 진구를 도와주는 캐릭터는?", "options": ["도라에몽", "피카츄", "아톰", "코난"], "correct_answer_index": 0, "explanation": "도라에몽의 주인공 도라에몽입니다." },
+            { "id": 47, "category": "anime", "question_text": "검은 조직의 약을 먹고 몸이 어린아이로 변해버린 고등학생 명탐정으로, '범인은 이 안에 있어!'라는 대사로 유명한 인물은?", "options": ["유명한", "김전일", "코난", "괴도 키드"], "correct_answer_index": 2, "explanation": "명탐정 코난의 주인공 코난(남도일)입니다." },
+            { "id": 48, "category": "anime", "question_text": "거대 거인들이 지배하는 세상에서 인류를 지키기 위해 조사병단에 입단한 소년으로, 거인으로 변신할 수 있는 능력을 가진 인물은?", "options": ["리바이", "미카사", "아르민", "에렌 예거"], "correct_answer_index": 3, "explanation": "진격의 거인의 주인공 에렌 예거입니다." },
+            { "id": 50, "category": "anime", "question_text": "지브리 스튜디오의 작품으로, 숲의 주인이며 거대한 몸집과 큰 입, 우산을 들고 다니는 모습으로 유명한 정령은?", "options": ["가오나시", "하울", "토토로", "포뇨"], "correct_answer_index": 2, "explanation": "이웃집 토토로의 주인공 토토로입니다." }
+        ];
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const SCREEN = { MAIN: 'MAIN', CATEGORY: 'CATEGORY', QUIZ: 'QUIZ', RESULT: 'RESULT', RANKING: 'RANKING' };
+
+        function App() {
+            const [screen, setScreen] = useState(SCREEN.MAIN);
+            const [selectedCategory, setSelectedCategory] = useState(null);
+            const [currentQuestions, setCurrentQuestions] = useState([]);
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [hearts, setHearts] = useState(3);
+            const [combo, setCombo] = useState(0);
+            const [maxCombo, setMaxCombo] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(15);
+            const [isActive, setIsActive] = useState(false);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [items, setItems] = useState({ half: true, time: true, hint: true });
+            const [hiddenOptions, setHiddenOptions] = useState([]);
+            const [hintActive, setHintActive] = useState(false);
+            const [userName, setUserName] = useState('');
+            const [rankings, setRankings] = useState(JSON.parse(localStorage.getItem('quiz_ranking')) || []);
+
+            useEffect(() => {
+                let timer = null;
+                if (screen === SCREEN.QUIZ && isActive && timeLeft > 0) {
+                    timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+                } else if (timeLeft === 0 && screen === SCREEN.QUIZ && !showFeedback) {
+                    handleAnswer(-1);
+                }
+                return () => clearInterval(timer);
+            }, [screen, isActive, timeLeft, showFeedback]);
+
+            const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+            const selectCategory = (cat) => {
+                let filtered = cat === 'random' 
+                    ? shuffle(QUESTIONS_DATA).slice(0, 10)
+                    : shuffle(QUESTIONS_DATA.filter(q => q.category === cat)).slice(0, 10);
+                
+                // Shuffle options for each question and update correct_answer_index
+                const shuffledQuestions = filtered.map(q => {
+                    const originalCorrectText = q.options[q.correct_answer_index];
+                    const shuffledOptions = shuffle(q.options);
+                    const newCorrectIndex = shuffledOptions.indexOf(originalCorrectText);
+                    return { ...q, options: shuffledOptions, correct_answer_index: newCorrectIndex };
+                });
+                
+                setCurrentQuestions(shuffledQuestions);
+                setSelectedCategory(cat);
+                setCurrentIndex(0); setScore(0); setHearts(3); setCombo(0); setMaxCombo(0);
+                setItems({ half: true, time: true, hint: true });
+                setScreen(SCREEN.QUIZ);
+                startNewQuestion();
+            };
+
+            const startNewQuestion = () => { 
+                setTimeLeft(15); setIsActive(true); setShowFeedback(false); 
+                setHiddenOptions([]); setHintActive(false); 
+            };
+
+            const handleAnswer = (index) => {
+                setIsActive(false);
+                const correct = currentQuestions[currentIndex].correct_answer_index === index;
+                setIsCorrect(correct); setShowFeedback(true);
+                if (correct) {
+                    setScore(prev => prev + 100 + (timeLeft * 10) + (combo * 20));
+                    setCombo(prev => { const next = prev + 1; if(next > maxCombo) setMaxCombo(next); return next; });
+                } else {
+                    setHearts(prev => prev - 1); setCombo(0);
+                }
+            };
+
+            const useHalf = () => {
+                if (!items.half) return;
+                const correct = currentQuestions[currentIndex].correct_answer_index;
+                const wrongs = [0,1,2,3].filter(i => i !== correct);
+                const toHide = shuffle(wrongs).slice(0, 2);
+                setHiddenOptions(toHide);
+                setItems(p => ({...p, half: false}));
+            };
+
+            const useTime = () => { if(items.time) { setTimeLeft(t => t + 10); setItems(p => ({...p, time: false})); } };
+            const useHint = () => { if(items.hint) { setHintActive(true); setItems(p => ({...p, hint: false})); } };
+
+            const nextQuestion = () => {
+                if ((hearts <= 1 && !isCorrect) || currentIndex >= currentQuestions.length - 1) { setScreen(SCREEN.RESULT); }
+                else { setCurrentIndex(prev => prev + 1); startNewQuestion(); }
+            };
+
+            const saveRanking = () => {
+                const newEntry = { id: Date.now(), user_name: userName || 'PLAYER', score: score, date: new Date().toLocaleDateString() };
+                const updated = [...rankings, newEntry].sort((a, b) => b.score - a.score).slice(0, 10);
+                setRankings(updated); localStorage.setItem('quiz_ranking', JSON.stringify(updated));
+                setScreen(SCREEN.RANKING);
+            };
+
+            const renderMain = () => (
+                <div className="game-container">
+                    <h1 className="blinking">TRIVIA ARCADE</h1>
+                    <p>Retro Trivia Challenge</p>
+                    <button className="pixel-button primary" onClick={() => setScreen(SCREEN.CATEGORY)}>Start Game</button>
+                    <button className="pixel-button" onClick={() => setScreen(SCREEN.RANKING)}>Ranking</button>
+                </div>
+            );
+
+            const renderCategory = () => (
+                <div className="game-container">
+                    <h2>Select Category</h2>
+                    <div className="category-grid">
+                        <button className="pixel-button" onClick={() => selectCategory('history')}>History</button>
+                        <button className="pixel-button" onClick={() => selectCategory('science')}>Science</button>
+                        <button className="pixel-button" onClick={() => selectCategory('geography')}>Geography</button>
+                        <button className="pixel-button" onClick={() => selectCategory('general')}>General</button>
+                        <button className="pixel-button" onClick={() => selectCategory('anime')}>Anime</button>
+                    </div>
+                    <button className="pixel-button primary" style={{marginTop:'20px'}} onClick={() => selectCategory('random')}>Random Mode</button>
+                    <button className="pixel-button" onClick={() => setScreen(SCREEN.MAIN)}>Back</button>
+                </div>
+            );
+
+            const renderQuiz = () => {
+                const q = currentQuestions[currentIndex];
+                if (!q) return null;
+                if (showFeedback) return (
+                    <div className="game-container">
+                        <h2 style={{color: isCorrect ? 'var(--correct-color)' : 'var(--wrong-color)'}}>{isCorrect ? 'CORRECT!' : 'WRONG!'}</h2>
+                        <p>Answer: {q.options[q.correct_answer_index]}</p>
+                        <p style={{fontSize:'0.6rem', background:'#222', padding:'10px'}}>{q.explanation}</p>
+                        <button className="pixel-button primary" onClick={nextQuestion}>NEXT</button>
+                    </div>
+                );
+                return (
+                    <div className="game-container">
+                        <div className="hud">
+                            <span className="heart">LIFE: {Array(hearts > 0 ? hearts : 0).fill('♥').join('')}</span>
+                            <span className="score">PTS: {score}</span>
+                            <span className="combo">COMBO: {combo}</span>
+                        </div>
+                        <div className="timer-container"><div className="timer-bar" style={{width: `${(timeLeft/15)*100}%`}}></div></div>
+                        <h2 style={{minHeight:'80px'}}>{q.question_text}</h2>
+                        {hintActive && <p style={{color:'var(--secondary-color)', fontSize:'0.5rem', marginBottom:'10px'}}>HINT: Look closely!</p>}
+                        {q.options.map((opt, i) => (
+                            <button key={i} className="pixel-button" onClick={() => handleAnswer(i)} style={{visibility: hiddenOptions.includes(i) ? 'hidden' : 'visible'}}>{opt}</button>
+                        ))}
+                        <div className="item-container">
+                            <button className="pixel-button item-button" onClick={useHalf} disabled={!items.half}>50:50</button>
+                            <button className="pixel-button item-button" onClick={useTime} disabled={!items.time}>+Time</button>
+                            <button className="pixel-button item-button" onClick={useHint} disabled={!items.hint}>Hint</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderResult = () => (
+                <div className="game-container">
+                    <h1>{hearts > 0 ? 'MISSION CLEAR' : 'GAME OVER'}</h1>
+                    <p className="score">FINAL SCORE: {score}</p>
+                    <p style={{fontSize:'0.5rem'}}>MAX COMBO: {maxCombo}</p>
+                    <input type="text" className="pixel-button" style={{cursor:'text', textAlign:'center'}} placeholder="YOUR NAME" onChange={e => setUserName(e.target.value)} />
+                    <button className="pixel-button primary" onClick={saveRanking}>SAVE RANKING</button>
+                    <button className="pixel-button" onClick={() => setScreen(SCREEN.MAIN)}>HOME</button>
+                </div>
+            );
+
+            const renderRanking = () => (
+                <div className="game-container">
+                    <h1>TOP 10</h1>
+                    <table>
+                        <thead><tr><th>NAME</th><th>SCORE</th><th>DATE</th></tr></thead>
+                        <tbody>{rankings.map(r => <tr key={r.id}><td>{r.user_name}</td><td>{r.score}</td><td>{r.date}</td></tr>)}</tbody>
+                    </table>
+                    <button className="pixel-button primary" onClick={() => setScreen(SCREEN.MAIN)}>BACK</button>
+                </div>
+            );
+
+            return (
+                <div>
+                    {screen === SCREEN.MAIN && renderMain()}
+                    {screen === SCREEN.CATEGORY && renderCategory()}
+                    {screen === SCREEN.QUIZ && renderQuiz()}
+                    {screen === SCREEN.RESULT && renderResult()}
+                    {screen === SCREEN.RANKING && renderRanking()}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
