@@ -1,0 +1,60 @@
+S3 정적 웹 호스팅 실습 개요
+S3 버킷을 이용해 정적 웹사이트(hosting) 구축
+index.html과 이미지 파일을 업로드해서 웹페이지 구성
+기본적으로 S3는 비공개(Private) → 퍼블릭 접근 허용 필요
+📌 실습 진행 순서
+index.html 작성
+간단한 HTML 페이지 생성
+이미지 포함 (class/img/image.png)
+폴더 및 파일 구성
+class/img 폴더 생성
+index.html, image.png 업로드
+S3 업로드
+index.html → 버킷에 업로드
+이미지 → class/img/ 경로에 업로드
+퍼블릭 접근 허용
+버킷 → 권한 → 퍼블릭 액세스 허용
+웹에서 접속 확인
+URL로 접속 시 접근 안 되는 이유:
+→ 권한(버킷 정책)이 없기 때문
+📌 S3 버킷 정책 (핵심)
+S3 리소스에 대한 접근 권한 설정 (JSON 형식)
+기본 상태: 모든 객체는 Private
+정책을 통해 외부 접근 허용 가능
+📌 기본 퍼블릭 접근 정책
+모든 사용자에게 파일 읽기 허용
+{
+  "Effect": "Allow",
+  "Principal": "*",
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::버킷이름/*"
+}
+📌 다양한 권한 설정 예시
+1️⃣ 특정 파일/폴더만 허용
+index.html, class/img만 공개
+2️⃣ 특정 IP만 접근 허용
+"Condition": {
+  "IpAddress": {
+    "aws:SourceIp": "123.123.123.123"
+  }
+}
+3️⃣ 특정 폴더 다운로드 제한
+Deny 사용해서 접근 차단
+{
+  "Effect": "Deny",
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::버킷/class/test/*"
+}
+
+👉 업로드는 가능하지만 다운로드는 제한 가능
+
+📌 핵심 정리 (시험용)
+S3 정적 호스팅 = HTML 파일 업로드 + 퍼블릭 권한 설정
+기본 상태는 Private
+외부 접속하려면:
+→ Bucket Policy에서 s3:GetObject 허용
+접근 제어는:
+전체 공개
+특정 파일만 공개
+IP 제한
+특정 경로 차단 가능
