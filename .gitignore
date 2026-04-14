@@ -1,4 +1,13 @@
+# Local settings
 .env
 __pycache__/
 *.pyc
 .streamlit/
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Python
+venv/
+.venv/
